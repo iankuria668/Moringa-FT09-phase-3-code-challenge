@@ -1,5 +1,4 @@
 from models import get_db_connection
-
 class Magazine:
     def __init__(self, id=None, name=None, category=None):
         self._id = None
@@ -59,34 +58,32 @@ class Magazine:
             raise ValueError('Category must be between 2 and 100 characters')
         
     def articles(self):
-        from models import Article
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM articles WHERE magazine_id = ?', (self.id,))
             articles = cursor.fetchall()
-            return [Article(*article) for article in articles]
+            return articles
     
     def contributors(self):
-        from models import Author
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM authors WHERE id IN (SELECT author_id FROM articles WHERE magazine_id = ?)', (self.id,))
             authors = cursor.fetchall()
-            return [Author(*author) for author in authors]
+            return authors
     
     def article_titles(self):
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT title FROM articles WHERE magazine_id = ?', (self.id,))
             titles = cursor.fetchall()
-            return [title[0] for title in titles]
+            return [title['title'] for title in titles]
     
     def contributing_authors(self):
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT name FROM authors WHERE id IN (SELECT author_id FROM articles WHERE magazine_id = ?)', (self.id,))
             names = cursor.fetchall()
-            return [name[0] for name in names]
+            return [name['name'] for name in names]
 
     def __repr__(self):
         return f'<Magazine {self.name}>'

@@ -1,5 +1,4 @@
-from models import get_db_connection
-
+from database.connection import get_db_connection
 class Author:
     def __init__(self, id=None, name=None):
         if id:
@@ -25,7 +24,7 @@ class Author:
             result = cursor.fetchone()
             if result is None:
                 raise ValueError(f'Author with id {id} does not exist.')
-            return result[0]
+            return result['name']
 
     @property
     def id(self):
@@ -43,20 +42,18 @@ class Author:
             raise ValueError('Name must be between 2 and 100 characters')
 
     def articles(self):
-        from models import Article
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM articles WHERE author_id = ?', (self.id,))
             articles = cursor.fetchall()
-            return [Article(*article) for article in articles]
+            return articles
 
     def magazines(self):
-        from models import Magazine
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM magazines WHERE id IN (SELECT magazine_id FROM articles WHERE author_id = ?)', (self.id,))
             magazines = cursor.fetchall()
-            return [Magazine(*magazine) for magazine in magazines]
+            return magazines
 
     def __repr__(self):
         return f'<Author {self.name}>'

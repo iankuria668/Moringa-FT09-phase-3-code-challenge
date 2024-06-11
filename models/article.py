@@ -1,10 +1,9 @@
 from models import get_db_connection
-
 class Article:
     def __init__(self, id=None, title=None, content=None, author_id=None, magazine_id=None):
         if id:
-            self._id = id
             details = self.fetch_details_by_id(id)
+            self._id = id
             self._title = details['title']
             self._content = details['content']
             self._author_id = details['author_id']
