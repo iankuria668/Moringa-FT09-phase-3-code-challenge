@@ -1,4 +1,4 @@
-from database.connection import get_db_connection
+from models import get_db_connection
 class Author:
     def __init__(self, id=None, name=None):
         if id:
@@ -16,6 +16,7 @@ class Author:
             cursor.execute('INSERT INTO authors (name) VALUES (?)', (name,))
             conn.commit()
             return cursor.lastrowid
+        
 
     def _fetch_name_by_id(self, id):
         with get_db_connection() as conn:
