@@ -1,5 +1,4 @@
 from models import get_db_connection
-
 class Article:
     def __init__(self, id=None, title=None, content=None, author=None, magazine=None):
         if id:
@@ -11,19 +10,16 @@ class Article:
             self._author_id = author.id
             self._magazine_id = magazine.id
             self._id = self._insert_article(title, content, author.id, magazine.id)
+        else:
+            raise ValueError('Either id or (title, content, author, magazine_id) must be provided.')
 
     def _insert_article(self, title, content, author_id, magazine_id):
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO articles (title, content, author_id, magazine_id) 
-            VALUES (?, ?, ?, ?)
-        ''', (title, content, author_id, magazine_id))
-        conn.commit()
-        article_id = cursor.lastrowid
-        conn.close()
-        return article_id
-
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('INSERT INTO articles (title, content, author_id, magazine_id) VALUES (?,?,?,?)', (title, content, author_id, magazine_id))
+            conn.commit()
+            return cursor.lastrowid
+    
     def _fetch_details_by_id(self, id):
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -33,7 +29,7 @@ class Article:
         if article:
             return article['title'], article['content'], article['author_id'], article['magazine_id']
         return None, None, None, None
-
+    
     @property
     def id(self):
         return self._id
@@ -44,12 +40,12 @@ class Article:
 
     @property
     def author(self):
-        from models.author import Author  # Local import to avoid circular dependency
+        from models.author import Author  
         return Author(id=self._author_id)
 
     @property
     def magazine(self):
-        from models.magazine import Magazine  # Local import to avoid circular dependency
+        from models.magazine import Magazine  
         return Magazine(id=self._magazine_id)
 
     def __repr__(self):
